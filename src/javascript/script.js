@@ -1,43 +1,127 @@
-// Seleciona todos os elementos com a classe '.kanban-card' e adiciona eventos a cada um deles
-document.querySelectorAll('.kanban-card').forEach(card => {
-    // Evento disparado quando começa a arrastar um card
-    card.addEventListener('dragstart', e => {
-        // Adiciona a classe 'dragging' ao card que está sendo arrastado
-        e.currentTarget.classList.add('dragging');
-    });
+const initKanban = () => {
+    const attachDragEvents = card => {
+        card.addEventListener('dragstart', e => {
+            e.currentTarget.classList.add('dragging');
+        });
 
-    // Evento disparado quando termina de arrastar o card
-    card.addEventListener('dragend', e => {
-        // Remove a classe 'dragging' quando o card é solto
-        e.currentTarget.classList.remove('dragging');
-    });
-});
+        card.addEventListener('dragend', e => {
+            e.currentTarget.classList.remove('dragging');
+        });
+    };
 
-// Seleciona todos os elementos com a classe '.kanban-cards' (as colunas) e adiciona eventos a cada um deles
-document.querySelectorAll('.kanban-cards').forEach(column => {
-    // Evento disparado quando um card arrastado passa sobre uma coluna (drag over)
-    column.addEventListener('dragover', e => {
-        // Previne o comportamento padrão para permitir o "drop" (soltar) do card
-        e.preventDefault();
-        // Adiciona a classe 'cards-hover'
-        e.currentTarget.classList.add('cards-hover');
-    });
+    const removeCardIcons = card => {
+        const cardIcons = card.querySelector('.card-icons');
+        if (cardIcons) {
+            cardIcons.remove();
+        }
+    };
 
-    // Evento disparado quando o card sai da área da coluna (quando o card é arrastado para fora)
-    column.addEventListener('dragleave', e => {
-        // Remove a classe 'cards-hover' quando o card deixa de estar sobre a coluna
-        e.currentTarget.classList.remove('cards-hover');
-    });
+    const initializeCards = () => {
+        document.querySelectorAll('.kanban-card').forEach(card => {
+            attachDragEvents(card);
+            removeCardIcons(card);
+        });
+    };
 
-    // Evento disparado quando o card é solto (drop) dentro da coluna
-    column.addEventListener('drop', e => {
-        // Remove a classe 'cards-hover', já que o card foi solto
-        e.currentTarget.classList.remove('cards-hover');
+    const createCardElement = (title, priority = 'medium') => {
+        const card = document.createElement('div');
+        card.className = 'kanban-card';
+        card.setAttribute('draggable', 'true');
 
-        // Seleciona o card que está sendo arrastado (que tem a classe 'dragging')
-        const dragCard = document.querySelector('.kanban-card.dragging');
-        
-        // Anexa (move) o card arrastado para a coluna onde foi solto
-        e.currentTarget.appendChild(dragCard);
-    });
-});
+        const badge = document.createElement('div');
+        badge.className = `badge ${priority}`;
+        badge.innerHTML = `<span>${priority === 'high' ? 'Alta prioridade' : priority === 'low' ? 'Baixa prioridade' : 'Média prioridade'}</span>`;
+
+        const cardTitle = document.createElement('p');
+        cardTitle.className = 'card-title';
+        cardTitle.textContent = title;
+
+        const cardInfos = document.createElement('div');
+        cardInfos.className = 'card-infos';
+
+        const user = document.createElement('div');
+        user.className = 'user';
+
+        const avatar = document.createElement('img');
+        avatar.src = 'src/images/ailton.png';
+        avatar.alt = 'Avatar';
+
+        user.appendChild(avatar);
+        cardInfos.appendChild(user);
+
+        card.appendChild(badge);
+        card.appendChild(cardTitle);
+        card.appendChild(cardInfos);
+
+        attachDragEvents(card);
+        return card;
+    };
+
+    const getCardPriority = () => {
+        const choicePrompt = prompt('Digite a prioridade do card: alta, média ou baixa (deixe em branco para média)');
+        if (!choicePrompt) return 'medium';
+
+        const choice = choicePrompt.trim().toLowerCase();
+        if (choice === 'alta' || choice === 'alta prioridade') return 'high';
+        if (choice === 'baixa' || choice === 'baixa prioridade') return 'low';
+        return 'medium';
+    };
+
+    const initializeAddCardButtons = () => {
+        const kanban = document.querySelector('.kanban') || document.body;
+        const buttons = document.querySelectorAll('.add-card');
+        console.log('Kanban init: add-card buttons found =', buttons.length);
+
+        buttons.forEach(button => button.setAttribute('type', 'button'));
+
+        kanban.addEventListener('click', event => {
+            const button = event.target.closest('.add-card');
+            if (!button) return;
+            event.preventDefault();
+
+            const title = prompt('Digite o título do novo card:');
+            if (!title || !title.trim()) return;
+
+            const priority = getCardPriority();
+            const column = button.closest('.kanban-column');
+            if (!column) return;
+
+            const cardsContainer = column.querySelector('.kanban-cards');
+            if (!cardsContainer) return;
+
+            const newCard = createCardElement(title.trim(), priority);
+            console.log('Kanban create card:', title.trim(), priority, cardsContainer);
+            cardsContainer.appendChild(newCard);
+        });
+    };
+
+    const initializeColumns = () => {
+        document.querySelectorAll('.kanban-cards').forEach(column => {
+            column.addEventListener('dragover', e => {
+                e.preventDefault();
+                e.currentTarget.classList.add('cards-hover');
+            });
+
+            column.addEventListener('dragleave', e => {
+                e.currentTarget.classList.remove('cards-hover');
+            });
+
+            column.addEventListener('drop', e => {
+                e.currentTarget.classList.remove('cards-hover');
+                const dragCard = document.querySelector('.kanban-card.dragging');
+                if (!dragCard) return;
+                e.currentTarget.appendChild(dragCard);
+            });
+        });
+    };
+
+    initializeCards();
+    initializeAddCardButtons();
+    initializeColumns();
+};
+
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initKanban);
+} else {
+    initKanban();
+}
