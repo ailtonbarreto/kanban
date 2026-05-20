@@ -36,7 +36,7 @@ body {
     padding: 12px;
     overflow: hidden;
     position: relative;
-    min-width: 252px;
+    min-width: 280px;
 }
 
 .kanban-column::after {
