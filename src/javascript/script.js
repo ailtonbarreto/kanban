@@ -39,15 +39,6 @@ const initKanban = () => {
         const cardInfos = document.createElement('div');
         cardInfos.className = 'card-infos';
 
-        const user = document.createElement('div');
-        user.className = 'user';
-
-        const avatar = document.createElement('img');
-        avatar.src = 'src/images/ailton.png';
-        avatar.alt = 'Avatar';
-
-        user.appendChild(avatar);
-        cardInfos.appendChild(user);
 
         card.appendChild(badge);
         card.appendChild(cardTitle);

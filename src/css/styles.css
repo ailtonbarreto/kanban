@@ -142,12 +142,6 @@ body {
     color: #a8a8aa;
 }
 
-.user img {
-    width: 42px;
-    height: 42px;
-    border-radius: 100%;
-    object-fit: cover;
-}
 
 .dragging {
     opacity: 0.5;
